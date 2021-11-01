@@ -1,35 +1,38 @@
 from bs4 import BeautifulSoup
 
-class HTMLPage():
+class Factory():
 
     DivTagClassAttrKey     = "class"
     DivTagContentAttrValue = "content"
+    routeTemplate          = "\n@routes.route('/blog/title')\ndef titleget():\n    return render_template('title.html')\n"
 
-    def __init__(self, targetPath: str = "", rawData: dict = None) -> None:
-        self.targetPath = targetPath
+    def __init__(self, targetTemplatePath: str = None, rawData: dict = None) -> None:
+        self.targetTemplatePath = targetTemplatePath
         self.rawData = rawData
 
-    def generate(self, filename = None) -> bool:
-        with open(filename, mode="r") as baseFile:
+    def generate(self, htmlTemplateFile = None, targetRouteFile: str = None) -> bool:
+        if htmlTemplateFile == None or targetRouteFile == None:
+            return False
+
+        with open(htmlTemplateFile, mode="r") as baseFile:
             fileContent = baseFile.read()
             docHTML = BeautifulSoup(fileContent, "html.parser")
 
-            for key, value in self.rawData.items():
-                # Process parse result - verify possible failures
-                if key == "title":
-                    self.__parseTitle(docHTML, value)
-                elif key == "content":
-                    self.__parseContent(docHTML, value)
-            print(docHTML.prettify())
+            docHTML("h2")[0].string = self.rawData["title"]
+            self.__parseContent(docHTML, self.rawData["content"])
 
-    def __parseTitle(self, docHTML = None, title = "N/A") -> bool:
-        if docHTML == None:
-            return False
+            baseFilename = self.rawData["title"].replace(" ", "")
 
-        docHTML("h2")[0].string = title
+            with open(self.targetTemplatePath + "/" + baseFilename + ".html", "w") as htmlFile:
+                htmlFile.write(docHTML.prettify())
+
+            with open(targetRouteFile, "a") as pyFile:
+                route = self.routeTemplate.replace("title", baseFilename)
+                pyFile.write(route)
 
         return True
 
+    # TODO - redo __buildTag
     def __parseContent(self, docHTML = None, contentList = None):
         def __buildTag(docHTML, type = "div", attrs = None, content = None) -> object:
             if docHTML == None:
