@@ -6,15 +6,15 @@ class Factory():
     DivTagContentAttrValue = "content"
     routeTemplate          = "\n@routes.route('/blog/title')\ndef titleget():\n    return render_template('title.html')\n"
 
-    def __init__(self, targetTemplatePath: str = None, rawData: dict = None) -> None:
-        self.targetTemplatePath = targetTemplatePath
+    def __init__(self, htmlTemplateFilename: str = None, rawData: dict = None) -> None:
+        self.htmlTemplateFilename = htmlTemplateFilename
         self.rawData = rawData
 
-    def generate(self, htmlTemplateFile = None, targetRouteFile: str = None) -> bool:
-        if htmlTemplateFile == None or targetRouteFile == None:
+    def generate(self, htmlTargetPath = None, targetRouteFile: str = None) -> bool:
+        if htmlTargetPath == None or targetRouteFile == None:
             return False
 
-        with open(htmlTemplateFile, mode="r") as baseFile:
+        with open(self.htmlTemplateFilename, mode="r") as baseFile:
             fileContent = baseFile.read()
             docHTML = BeautifulSoup(fileContent, "html.parser")
 
@@ -23,7 +23,7 @@ class Factory():
 
             baseFilename = self.rawData["title"].replace(" ", "")
 
-            with open(self.targetTemplatePath + "/" + baseFilename + ".html", "w") as htmlFile:
+            with open(htmlTargetPath + "/" + baseFilename + ".html", "w") as htmlFile:
                 htmlFile.write(docHTML.prettify())
 
             with open(targetRouteFile, "a") as pyFile:
