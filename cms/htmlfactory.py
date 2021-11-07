@@ -6,9 +6,11 @@ class Factory():
     DivTagContentAttrValue = "content"
     routeTemplate          = "\n@routes.route('/blog/title')\ndef titleget():\n    return render_template('title.html')\n"
 
-    def __init__(self, htmlTemplateFilename: str = None, rawData: dict = None) -> None:
+    def __init__(self, parent: object, htmlTemplateFilename: str = None, rawData: dict = None) -> None:
+        # Guards missing
         self.htmlTemplateFilename = htmlTemplateFilename
         self.rawData = rawData
+        self.parent = parent
 
     def generate(self, htmlTargetPath = None, targetRouteFile: str = None) -> bool:
         if htmlTargetPath == None or targetRouteFile == None:
@@ -29,6 +31,10 @@ class Factory():
             with open(targetRouteFile, "a") as pyFile:
                 route = self.routeTemplate.replace("title", baseFilename)
                 pyFile.write(route)
+
+            # Drop down menu
+            parent = self.rawData["parent"] if "parent" in self.rawData.keys() else None
+            self.parent.setDropDown(parent, self.rawData["title"])
 
         return True
 
